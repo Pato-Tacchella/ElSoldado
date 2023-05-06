@@ -1,112 +1,79 @@
 #include <iostream>
-#include <string>
 #include <stdlib.h>
 using namespace std;
 
 
-
-class Armas
+class Gun
 {
 protected:
-	string name = NULL;
-	string disparo = NULL;
-
+	string name;
+	string shot;
 public:
-	Armas() { };
-	~Armas() { };
-	void setArma() {};
-	virtual void disparar();
-	string getArma() { return name; };
+	Gun() {};
+	~Gun() {};
+
+	virtual string shooting() { return 0; };
+	virtual string getGun() { return 0; };
 };
 
-class Revolver : public Armas
+class Revolver : public Gun
 {
-	Revolver() : Armas() {
+public:
+	Revolver() {
 		name = "Revolver";
-		disparo = "Pum";
+		shot = "Pum..";
 	};
-	~Revolver() { };
-	void disparar() { cout << disparo << "\n"; };
+	~Revolver() {};
+
+	string shooting() override { return shot; };
+	string getGun() override { return name; };
 };
 
-class Rifle : public Armas
+class Rifle : public Gun
 {
-	Rifle() : Armas () {
-		name = "Rifle";
-		disparo = "Pum pum pum..";
-	};
-	~Rifle() { };
-	void disparar() {
-		cout << disparo << "\n";
-	};
-};
-
-class Escopeta : public Armas
-{
-	Escopeta() : Armas() {
-		name = "Escopeta";
-		disparo = "Paaa...";
-	};
-	~Escopeta() { };
-	void disparar() {
-		cout << disparo << "\n";
-	};
-};
-
-class Soldado
-{
-	Armas* _arma;
-
 public:
-	Soldado() { cout << "creando"; };
-	~Soldado() { cout << "borrado"; };
+	Rifle() {
+		name = "Rifle";
+		shot = "Pum pum pum..";
+	};
+	~Rifle() {};
 
-	void elegirArma();
-	bool tieneArma();
-	void dejarArma();
-	void armaEnUso();
-	void gatillar();
+	string shooting() override { return shot; };
+	string getGun() override { return name; };
 };
 
-void Soldado::elegirArma()
+class Escopeta : public Gun
 {
-	int n;
-	cout << "Por favor, escoja el arma que desea utilizar: \n"
-		<< "\n"
-		<< "1. Revolver\n"
-		<< "2. Rifle\n"
-		<< "3. Escopeta\n"
-		<< "0. Volver atras ";
-	cin >> n;
+public: 
+	Escopeta() {
+		name = "Escopeta";
+		shot = "Paaa..";
+	};
+	~Escopeta() {};
 
-	switch (n)
-	{
-	case 1: { 
-		Revolver* revolver = new Revolver();
-		_arma = revolver;
-		cout << "Usted eligio: " << revolver->getArma();
-		//SALIR  n = 0;
-	} break;
-	case 2: { 
-		Rifle* rifle;
-		_arma = rifle;
-		cout << "Usted eligio: " << rifle->getArma();
-		//salir
-	} break;
-	case 3: { 
-		Escopeta* escopeta;
-		_arma = escopeta;
-		cout << "Usted eligio: " << escopeta->getArma();
-		//salir
-	} break;
-	case 0: {  /* SALIR */ } break;
-	}
+	string shooting() override { return shot; };
+	string getGun() override { return name; };
+};
 
-}
-
-bool Soldado::tieneArma()
+class Soldier
 {
-	if (_arma == NULL)
+	Gun* gun = nullptr;
+	string weapon;
+	string shot;
+public:
+	Soldier() { weapon = ""; shot = ""; };
+	~Soldier() {};
+
+	bool haveWeapon();
+	void chooseWeapon();
+	void clearWeapon();
+	void getWeapon();
+	void trigger();
+};
+
+bool Soldier::haveWeapon()
+{
+	if (weapon.empty())
 	{
 		return false;
 	}
@@ -116,70 +83,151 @@ bool Soldado::tieneArma()
 	}
 }
 
-void Soldado::dejarArma()
+void Soldier::chooseWeapon()
 {
-	_arma = NULL;
-}
+	int option;
 
-void Soldado::gatillar()
-{
-	_arma->disparar();
-}
+	cout << "Por favor, escoja el arma que desea utilizar: \n"
+		<< "\n"
+		<< "1. Revolver\n"
+		<< "2. Rifle\n"
+		<< "3. Escopeta\n"
+		<< "0. Volver atras ";
+	cin >> option;
 
-void Soldado::armaEnUso()
-{
-	if (tieneArma())
-	{
-		cout << "Esta armado con: " << _arma << "\n";
+	if (!haveWeapon()) {
+		switch (option)
+		{
+			case 1: {
+				std::shared_ptr<Revolver> gun{ new Revolver };
+				weapon = gun->getGun();
+				shot = gun->shooting();
+				cout << "Usted eligio: " << weapon << "\n";
+
+			} break;
+			case 2:
+			{
+				std::shared_ptr<Rifle> gun{ new Rifle };
+				weapon = gun->getGun();
+				shot = gun->shooting();
+				cout << "Usted eligio: " << weapon << "\n";
+			} break;
+			case 3:
+			{
+				std::shared_ptr<Escopeta> gun{ new Escopeta };
+				weapon = gun->getGun();
+				shot = gun->shooting();
+				cout << "Usted eligio: " << weapon << "\n";
+			} break;
+			default:
+				break;
+		}
 	}
-	else 
+	else
 	{
-		cout << "Usted no posee arma \n";
+		cout << "Usted ya posee un arma en su inventario... \n"
+			<< "Presione enter para volver al menu principal";
+			//Salir
+	}
+}
+
+void Soldier::clearWeapon()
+{
+	delete gun;
+	weapon = "";
+	shot = "";
+	cout << "Usted no posee ningun arma en su inventario";
+}
+
+void Soldier::getWeapon()
+{
+	if (!haveWeapon())
+	{
+		cout << "Usted no posee un arma en su inventario... \n"
+			<< "Presione enter para volver al menu principal\n";
+		//Salir
+	}
+	else
+	{
+		cout << "Usted tiene equipada: " << weapon <<"\n";
 	}
 }
 
 
-
-void Armas::disparar()
+void Soldier::trigger()
 {
-	cout << disparo << "\n";
+	if (haveWeapon())
+	{
+		cout << shot;
+		
+	}
+	else
+	{
+		cout << "Usted no posee un arma en su inventario... \n"
+			<< "Presione enter para volver al menu principal\n";
+	}
 }
-
-
-
 
 
 int main()
 {
-
-	Soldado* sold = new Soldado();
-	
-
+	Soldier* soldado = new Soldier;
 	int opcion;
-	
-	
-	
-	switch (opcion)
-	{
-	default:
-	{
-		cout << " -== Bienvenido al campo de entrenamiento, Soldado ==- \n\n";
 
-		cout << "Que desea hacer? \n"
+	do {
+		system("cls");
+		cout << " -== Bienvenido al campo de entrenamiento, Soldado ==- \n\n";
+		
+		cout << "que desea hacer? \n"
 			<< "(presione el numero correspondiente a la opcion del menu)\n"
 			<< "\n"
 			<< "1. Recoger arma\n"
 			<< "2. Dejar arma\n"
 			<< "3. Disparar\n"
 			<< "4. Ver arma en uso\n"
-			<< "0. Salir";
-	}
-	break;
+			<< "0. Salir \n";
+		
+		cin >> opcion;
 
-	case 1:
-	{		
-		;
-	}
-	break;
-	}
+		switch (opcion)
+		{
+		default: {
+
+		} break;
+
+		case 1: {
+			system("cls");
+			soldado->chooseWeapon();
+			system("pause");
+		} break;
+
+		case 2: {
+			system("cls");
+			soldado->clearWeapon();
+			system("pause");
+		} break;
+		case 3: {
+			system("cls");
+			soldado->trigger();
+			system("pause");
+		} break;
+		case 4: {
+			system("cls");
+			soldado->getWeapon();
+			system("pause");
+		} break;
+		case 0: {
+			system("cls");
+			cout << "Presione ENTER para salir";
+			system("pause");
+
+		} break;
+		}
+	} while (opcion != 0);
+	
+
+
+
 }
+
+
